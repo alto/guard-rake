@@ -45,15 +45,24 @@ module Guard
         run_rake_task(paths)
       end
     else
-      def run_on_changes(paths)
-        run_rake_task(paths)
+      def run_on_additions(paths)
+        puts "added #{paths.inspect}"
+        run_rake_task(paths, :added)
+      end
+      def run_on_modifications(paths)
+        puts "modified #{paths.inspect}"
+        run_rake_task(paths, :modified)
+      end
+      def run_on_removals(paths)
+        puts "removed #{paths.inspect}"
+        run_rake_task(paths, :removed)
       end
     end
 
-    def run_rake_task(paths=[])
+    def run_rake_task(paths=[], event=:changed)
       UI.info "running #{@task}"
       ::Rake::Task.tasks.each { |t| t.reenable }
-      ::Rake::Task[@task].invoke(*@options[:task_args], paths)
+      ::Rake::Task[@task].invoke(*@options[:task_args], paths, event)
 
       Notifier.notify(
         "watched files: #{paths}", 
